@@ -8,7 +8,7 @@
 
 #include "dom.cuh"
 #include "util.cuh"
-#include "param.cuh"
+#include "param.h"
 
 namespace LOCATION {
 static const int NONE   = 0;

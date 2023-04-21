@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "mesh.cuh"
 #include "util.cuh"
-#include "param.cuh"
+#include "param.h"
 
 struct LS_State {
     double re;
