@@ -50,7 +50,7 @@ int main() {
     t.sync_d2h();
     b.sync_d2h();
 
-    /* for (int idx = 0; idx < N; idx ++) {
+    for (int idx = 0; idx < N; idx ++) {
         printf("%12.5e %12.5e %12.5e, %12.5e\n", a(idx, 1), a(idx, 0), a(idx, 2), b(idx));
     }
     printf("---------------------------------------\n");
@@ -58,7 +58,7 @@ int main() {
         printf("%12.5e\n", t(idx));
     }
     printf("---------------------------------------\n");
-    printf("%12.5e, %d\n", ls_state.re, ls_state.it); */
+    printf("%12.5e, %d\n", ls_state.re, ls_state.it);
 
     float wall_time;
     cudaEventElapsedTime(&wall_time, start, stop);

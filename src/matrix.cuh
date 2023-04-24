@@ -122,9 +122,9 @@ namespace MatrixUtil {
 __global__ static void get_max_diag_kernel(MatrixCp<double> &a, double *max_partial, dim3 &size) {
     __shared__ double cache[n_threads];
     int stride = Util::get_global_size();
-    double temp_max = - DBL_MAX;
-    for (int idx = Util::get_global_idx(); idx < a._num; idx += stride) {
-        double _value = a(idx, 0);
+    double temp_max = 0;
+    for (int idx = Util::get_global_idx(); idx < a._row; idx += stride) {
+        double _value = fabs(a(idx, 0));
         if (_value > temp_max) {
             temp_max = _value;
         }

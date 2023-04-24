@@ -58,6 +58,7 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
         for (int i = 0; i < restart; i ++) {
             MatrixUtil::clear(z[i], LOCATION::DEVICE);
             preconditioner_sor(a, z[i], v[i], 5, dom);
+            // MatrixUtil::assign(z[i], v[i], LOCATION::DEVICE);
             calc_ax_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(z[i]._dd), *(w._dd), *(dom._size_ptr));
             for (int k = 0; k <= i; k ++) {
                 h[k][i] = dot(w, v[k], dom);
@@ -117,6 +118,12 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
 
         calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
         state.re = MatrixUtil::calc_norm(r, dom) / x._num;
+    }
+    printf("\n\n");
+    w.release(LOCATION::DEVICE);
+    for (int i = 0; i < restart + 1; i ++) {
+        v[i].release(LOCATION::DEVICE);
+        z[i].release(LOCATION::DEVICE);
     }
 }
 

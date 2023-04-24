@@ -114,6 +114,7 @@ static void prepare_poisson_eq(Matrix<double> &a, Matrix<double> &b, Mesh &mesh,
     prepare_poisson_eq_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(b._dd), *(mesh.x._dd), *(mesh.h._dd), *(dom._size_ptr));
 
     double max_diag = MatrixUtil::get_max_diag(a, dom);
+    printf("max diag = %lf\n", max_diag);
 
     scale_eq_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(b._dd), *(dom._size_ptr), max_diag);
 }
