@@ -43,7 +43,7 @@ int main() {
 
     cudaEventRecord(start);
     // poisson_pbicgstab(a, t, b, r, 1e-9, 100000, dom, ls_state);
-    poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10000, 10, dom, ls_state);
+    // poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10000, 10, dom, ls_state);
     cudaEventRecord(stop);
 
     a.sync_d2h();
