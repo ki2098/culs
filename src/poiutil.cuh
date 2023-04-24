@@ -172,7 +172,7 @@ __global__ static void poisson_jacobi_kernel(MatrixCp<double> &a, MatrixCp<doubl
     }
 }
 
-static void preconditioner_sor(Matrix<double> &a, Matrix<double> &x, Matrix<double> &b, int maxit, Dom &dom) {
+static void preconditioner_sor(const Matrix<double> &a, Matrix<double> &x, const Matrix<double> &b, int maxit, Dom &dom) {
     for (int it = 1; it <= maxit; it ++) {
         poisson_sor_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), sor_omega, 0, *(dom._size_ptr));
         poisson_sor_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), sor_omega, 1, *(dom._size_ptr));
@@ -180,7 +180,7 @@ static void preconditioner_sor(Matrix<double> &a, Matrix<double> &x, Matrix<doub
 }
 
 static void preconditioner_jacobi(Matrix<double> &a, Matrix<double> &x, Matrix<double> &b, int maxit, Dom &dom) {
-    Matrix<double> xp(dom._size, 1, LOCATION::DEVICE);
+    Matrix<double> xp(dom._size, 1, LOCATION::DEVICE, -1);
     for (int it = 1; it <= maxit; it ++) {
         MatrixUtil::assign(xp, x, LOCATION::DEVICE);
         poisson_jacobi_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(xp._dd), *(b._dd), *(dom._size_ptr));

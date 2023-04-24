@@ -58,13 +58,13 @@ __global__ static void pbicgstab_kernel_4(MatrixCp<double> &r, MatrixCp<double> 
 
 
 static void poisson_pbicgstab(Matrix<double> &a, Matrix<double> &x, Matrix<double> &b, Matrix<double> &r, double e, int maxit, Dom &dom, LS_State &state) {
-    Matrix<double> rr(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double>  p(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double>  q(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double>  s(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double> pp(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double> ss(dom._size, 1, LOCATION::DEVICE);
-    Matrix<double>  t(dom._size, 1, LOCATION::DEVICE);
+    Matrix<double> rr(dom._size, 1, LOCATION::DEVICE, 21);
+    Matrix<double>  p(dom._size, 1, LOCATION::DEVICE, 22);
+    Matrix<double>  q(dom._size, 1, LOCATION::DEVICE, 23);
+    Matrix<double>  s(dom._size, 1, LOCATION::DEVICE, 24);
+    Matrix<double> pp(dom._size, 1, LOCATION::DEVICE, 25);
+    Matrix<double> ss(dom._size, 1, LOCATION::DEVICE, 26);
+    Matrix<double>  t(dom._size, 1, LOCATION::DEVICE, 27);
 
     double rho, rrho, alpha, beta, omega;
 
@@ -113,13 +113,13 @@ static void poisson_pbicgstab(Matrix<double> &a, Matrix<double> &x, Matrix<doubl
     }
     printf("\n\n");
 
-    rr.release(LOCATION::DEVICE);
-    p.release(LOCATION::DEVICE);
-    q.release(LOCATION::DEVICE);
-    s.release(LOCATION::DEVICE);
-    pp.release(LOCATION::DEVICE);
-    ss.release(LOCATION::DEVICE);
-    t.release(LOCATION::DEVICE);
+    // rr.release(LOCATION::DEVICE);
+    // p.release(LOCATION::DEVICE);
+    // q.release(LOCATION::DEVICE);
+    // s.release(LOCATION::DEVICE);
+    // pp.release(LOCATION::DEVICE);
+    // ss.release(LOCATION::DEVICE);
+    // t.release(LOCATION::DEVICE);
 }
 
 #endif

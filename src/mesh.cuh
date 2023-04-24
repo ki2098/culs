@@ -15,7 +15,7 @@ struct Mesh {
     void release(int loc);
 };
 
-Mesh::Mesh(Dom &dom) : x(dom._size, 3, LOCATION::HOST), h(dom._size, 3, LOCATION::HOST), v(dom._size, 1, LOCATION::HOST) {}
+Mesh::Mesh(Dom &dom) : x(dom._size, 3, LOCATION::HOST, 1), h(dom._size, 3, LOCATION::HOST, 2), v(dom._size, 1, LOCATION::HOST, 3) {}
 
 void Mesh::sync_d2h() {
     x.sync_d2h();

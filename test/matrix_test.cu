@@ -20,8 +20,8 @@ int main() {
     dim3 origin(0, 0, 0);
     Dom dom(size, origin);
 
-    Matrix<double> a(size, 1, LOCATION::HOST);
-    Matrix<double> b(size, 1, LOCATION::HOST);
+    Matrix<double> a(size, 1, LOCATION::HOST, 1);
+    Matrix<double> b(size, 1, LOCATION::HOST, 2);
 
     for (int i = 0; i < N; i ++) {
         a(i) = 2;

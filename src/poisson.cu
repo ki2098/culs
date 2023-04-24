@@ -29,10 +29,10 @@ int main() {
 
     mesh.sync_h2d();
 
-    Matrix<double> a(size, 3, LOCATION::BOTH);
-    Matrix<double> t(size, 1, LOCATION::BOTH);
-    Matrix<double> b(size, 1, LOCATION::BOTH);
-    Matrix<double> r(size, 1, LOCATION::BOTH);
+    Matrix<double> a(size, 3, LOCATION::BOTH, 11);
+    Matrix<double> t(size, 1, LOCATION::BOTH, 12);
+    Matrix<double> b(size, 1, LOCATION::BOTH, 13);
+    Matrix<double> r(size, 1, LOCATION::BOTH, 14);
 
     prepare_poisson_eq(a, b, mesh, dom);
 
@@ -43,12 +43,13 @@ int main() {
 
     cudaEventRecord(start);
     // poisson_pbicgstab(a, t, b, r, 1e-9, 100000, dom, ls_state);
-    // poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10000, 10, dom, ls_state);
+    poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10, 2, dom, ls_state);
     cudaEventRecord(stop);
 
     a.sync_d2h();
     t.sync_d2h();
     b.sync_d2h();
+    r.sync_d2h();
 
     for (int idx = 0; idx < N; idx ++) {
         printf("%12.5e %12.5e %12.5e, %12.5e\n", a(idx, 1), a(idx, 0), a(idx, 2), b(idx));
@@ -64,10 +65,10 @@ int main() {
     cudaEventElapsedTime(&wall_time, start, stop);
     printf("%f\n", wall_time / 1000.0);
 
-    mesh.release(LOCATION::BOTH);
-    a.release(LOCATION::BOTH);
-    t.release(LOCATION::BOTH);
-    b.release(LOCATION::BOTH);
+    // mesh.release(LOCATION::DEVICE);
+    // a.release(LOCATION::BOTH);
+    // t.release(LOCATION::BOTH);
+    // b.release(LOCATION::BOTH);
 
     return 0;
 }

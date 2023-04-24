@@ -24,15 +24,23 @@ struct MatrixCp {
     int _col;
     int _num;
     int _loc;
-    int _ini;
-    MatrixCp(dim3 &size, int col, int loc);
+    int _lab;
+    MatrixCp(dim3 &size, int col, int loc, int lab);
+    MatrixCp(int row, int col, int loc, int lab);
+    MatrixCp();
+    ~MatrixCp();
+    void init(dim3 &size, int col, int loc, int lab);
+    void init(int row, int col, int loc, int lab);
     void release();
     __host__ __device__ T& operator()(int idx) {return _arr[idx];}
     __host__ __device__ T& operator()(int row_idx, int col_idx) {return _arr[col_idx * _row + row_idx];}
 };
 
 template<class T>
-MatrixCp<T>::MatrixCp(dim3 &size, int col, int loc) : _row(size.x * size.y * size.z), _col(col), _num(size.x * size.y * size.z * col), _loc(loc) {
+MatrixCp<T>::MatrixCp() : _row(0), _col(0), _num(0), _loc(LOCATION::NONE), _lab(0), _arr(nullptr) {/* printf("Default constructor of MatrixCp called\n"); */}
+
+template<class T>
+MatrixCp<T>::MatrixCp(dim3 &size, int col, int loc, int lab) : _row(size.x * size.y * size.z), _col(col), _num(size.x * size.y * size.z * col), _loc(loc), _lab(lab) {
     if (loc == LOCATION::HOST) {
         _arr = (T*)malloc(sizeof(T) * _num);
         memset(_arr, 0, sizeof(T) * _num);
@@ -43,10 +51,77 @@ MatrixCp<T>::MatrixCp(dim3 &size, int col, int loc) : _row(size.x * size.y * siz
 }
 
 template<class T>
+MatrixCp<T>::MatrixCp(int row, int col, int loc, int lab) : _row(row), _col(col), _num(row * col), _loc(loc), _lab(lab) {
+    if (loc == LOCATION::HOST) {
+        _arr = (T*)malloc(sizeof(T) * _num);
+        memset(_arr, 0, sizeof(T) * _num);
+    } else if (loc == LOCATION::DEVICE) {
+        cudaMalloc(&_arr, sizeof(T) * _num);
+        cudaMemset(_arr, 0, sizeof(T) * _num);
+    }
+}
+
+template<class T>
+void MatrixCp<T>::init(dim3 &size, int col, int loc, int lab) {
+    if (_loc) {
+        return;
+    }
+    _row = size.x * size.y * size.z;
+    _col = col;
+    _num = _row * _col;
+    _loc = loc;
+    _lab = lab;
+    if (loc == LOCATION::HOST) {
+        _arr = (T*)malloc(sizeof(T) * _num);
+        memset(_arr, 0, sizeof(T) * _num);
+        // printf("initializer of MatrixCp %d called to free on HOST\n", _lab);
+    } else if (loc == LOCATION::DEVICE) {
+        cudaMalloc(&_arr, sizeof(T) * _num);
+        cudaMemset(_arr, 0, sizeof(T) * _num);
+        // printf("initializer of MatrixCp %d called to free on DEVICE\n", _lab);
+    }
+}
+
+template<class T>
+void MatrixCp<T>::init(int row, int col, int loc, int lab) {
+    if (_loc) {
+        return;
+    }
+    _row = row;
+    _col = col;
+    _num = _row * _col;
+    _loc = loc;
+    _lab = lab;
+    if (loc == LOCATION::HOST) {
+        _arr = (T*)malloc(sizeof(T) * _num);
+        memset(_arr, 0, sizeof(T) * _num);
+        // printf("initializer of MatrixCp %d called to init on HOST\n", _lab);
+    } else if (loc == LOCATION::DEVICE) {
+        cudaMalloc(&_arr, sizeof(T) * _num);
+        cudaMemset(_arr, 0, sizeof(T) * _num);
+        // printf("initializer of MatrixCp %d called to init on DEVICE\n", _lab);
+    }
+}
+
+template<class T>
 void MatrixCp<T>::release() {
     if (_loc == LOCATION::HOST) {
+        // printf("release of MatrixCp %d called to free on HOST\n", _lab);
         free(_arr);
     } else if (_loc == LOCATION::DEVICE) {
+        // printf("release of MatrixCp %d called to free on DEVICE\n", _lab);
+        cudaFree(_arr);
+    }
+    _loc = LOCATION::NONE;
+}
+
+template<class T>
+MatrixCp<T>::~MatrixCp() {
+    if (_loc == LOCATION::HOST) {
+        // printf("destructor of MatrixCp %d called to free on HOST\n", _lab);
+        free(_arr);
+    } else if (_loc == LOCATION::DEVICE) {
+        // printf("destructor of MatrixCp %d called to free on DEVICE\n", _lab);
         cudaFree(_arr);
     }
     _loc = LOCATION::NONE;
@@ -61,7 +136,13 @@ struct Matrix {
     int         _col;
     int         _num;
     int         _loc;
-    Matrix(dim3 &size, int col, int loc);
+    int         _lab;
+    Matrix(dim3 &size, int col, int loc, int lab);
+    Matrix(int row, int col, int loc, int lab);
+    Matrix();
+    ~Matrix();
+    void init(dim3 &size, int col, int loc, int lab);
+    void init(int row, int col, int loc, int lab);
     void release(int loc);
     void sync_h2d();
     void sync_d2h();
@@ -70,7 +151,10 @@ struct Matrix {
 };
 
 template<class T>
-Matrix<T>::Matrix(dim3 &size, int col, int loc) : _row(size.x * size.y * size.z), _col(col), _num(size.x * size.y * size.z * col), _loc(loc), _hh(size, col, (loc & LOCATION::HOST)), _hd(size, col, (loc & LOCATION::DEVICE)), _dd(nullptr) {
+Matrix<T>::Matrix() : _row(0), _col(0), _num(0), _loc(LOCATION::NONE), _lab(0), _dd(nullptr) {/* printf("Default constructor of Matrix called\n"); */}
+
+template<class T>
+Matrix<T>::Matrix(dim3 &size, int col, int loc, int lab) : _row(size.x * size.y * size.z), _col(col), _num(size.x * size.y * size.z * col), _loc(loc), _lab(lab), _hh(size, col, (loc & LOCATION::HOST), lab), _hd(size, col, (loc & LOCATION::DEVICE), lab), _dd(nullptr) {
     if (loc & LOCATION::DEVICE) {
         cudaMalloc(&_dd, sizeof(MatrixCp<T>));
         cudaMemcpy(_dd, &_hd, sizeof(MatrixCp<T>), cudaMemcpyHostToDevice);
@@ -78,17 +162,74 @@ Matrix<T>::Matrix(dim3 &size, int col, int loc) : _row(size.x * size.y * size.z)
 }
 
 template<class T>
+Matrix<T>::Matrix(int row, int col, int loc, int lab) : _row(row), _col(col), _num(row * col), _loc(loc), _lab(lab), _hh(row, col, (loc & LOCATION::HOST), lab), _hd(row, col, (loc & LOCATION::DEVICE), lab), _dd(nullptr) {
+    if (loc & LOCATION::DEVICE) {
+        cudaMalloc(&_dd, sizeof(MatrixCp<T>));
+        cudaMemcpy(_dd, &_hd, sizeof(MatrixCp<T>), cudaMemcpyHostToDevice);
+    }
+}
+
+template<class T>
+void Matrix<T>::init(dim3 &size, int col, int loc, int lab) {
+    if (_loc) {
+        return;
+    }
+    _row = size.x * size.y * size.z;
+    _col = col;
+    _num = _row * _col;
+    _loc = loc;
+    _lab = lab;
+    _hh.init(_row, _col, _loc & LOCATION::HOST  , _lab);
+    _hd.init(_row, _col, _loc & LOCATION::DEVICE, _lab);
+    if (loc & LOCATION::DEVICE) {
+        cudaMalloc(&_dd, sizeof(MatrixCp<T>));
+        cudaMemcpy(_dd, &_hd, sizeof(MatrixCp<T>), cudaMemcpyHostToDevice);
+        // printf("initializer of Matrix %d called to init on DEVICE\n", _lab);
+    }
+}
+
+template<class T>
+void Matrix<T>::init(int row, int col, int loc, int lab) {
+    if (_loc) {
+        return;
+    }
+    _row = row;
+    _col = col;
+    _num = _row * _col;
+    _loc = loc;
+    _lab = lab;
+    _hh.init(_row, _col, _loc & LOCATION::HOST  , _lab);
+    _hd.init(_row, _col, _loc & LOCATION::DEVICE, _lab);
+    if (loc & LOCATION::DEVICE) {
+        cudaMalloc(&_dd, sizeof(MatrixCp<T>));
+        cudaMemcpy(_dd, &_hd, sizeof(MatrixCp<T>), cudaMemcpyHostToDevice);
+        // printf("initializer of Matrix %d called to init on DEVICE\n", _lab);
+    }
+}
+
+template<class T>
 void Matrix<T>::release(int loc) {
     if ((loc & LOCATION::HOST) && (_loc & LOCATION::HOST)) {
+        // printf("release of Matrix %d called to free on HOST\n", _lab);
         _hh.release();
         _loc &= (~LOCATION::HOST);
     }
     if ((loc & LOCATION::DEVICE) && (_loc & LOCATION::DEVICE)) {
+        // printf("release of Matrix %d called to free on DEVICE\n", _lab);
         _hd.release();
         cudaFree(_dd);
         _loc &= (~LOCATION::DEVICE);
     }
 
+}
+
+template<class T>
+Matrix<T>::~Matrix() {
+    if (_loc & LOCATION::DEVICE) {
+        // printf("destructor of Matrix %d called to free on DEVICE\n", _lab);
+        cudaFree(_dd);
+    }
+    _loc = LOCATION::NONE;
 }
 
 template<class T>
