@@ -1,5 +1,5 @@
-#ifndef _MESH_H
-#define _MESH_H
+#ifndef _MESH_H_
+#define _MESH_H_ 1
 
 #include "matrix.cuh"
 #include "dom.cuh"

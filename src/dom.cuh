@@ -1,5 +1,5 @@
-#ifndef _DOM_H
-#define _DOM_H 1
+#ifndef _DOM_H_
+#define _DOM_H_ 1
 
 #include <cuda.h>
 #include <cuda_runtime.h>

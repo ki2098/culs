@@ -1,5 +1,5 @@
-#ifndef _UTIL_H
-#define _UTIL_H 1
+#ifndef _UTIL_H_
+#define _UTIL_H_ 1
 
 #include <cuda.h>
 #include <cuda_runtime.h>

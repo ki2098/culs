@@ -1,5 +1,5 @@
-#ifndef _MATRIX_H
-#define _MATRIX_H 1
+#ifndef _MATRIX_H_
+#define _MATRIX_H_ 1
 
 #include <float.h>
 #include <cassert>
@@ -24,6 +24,7 @@ struct MatrixCp {
     int _col;
     int _num;
     int _loc;
+    int _ini;
     MatrixCp(dim3 &size, int col, int loc);
     void release();
     __host__ __device__ T& operator()(int idx) {return _arr[idx];}

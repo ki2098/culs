@@ -3,12 +3,17 @@
 #include <cuda_runtime.h>
 #include <cuda_profiler_api.h>
 #include "poisson.cuh"
+#include "poigmres.cuh"
 
 int main() {
     dim3 size(N, 1, 1);
     dim3 origin(0, 0, 0);
     Dom dom(size, origin);
     Mesh mesh(dom);
+
+    cudaDeviceProp dprop;
+    cudaGetDeviceProperties(&dprop, 0);
+    printf("%d %d %d %d\n", dprop.multiProcessorCount, dprop.maxThreadsPerBlock, dprop.maxThreadsPerMultiProcessor, dprop.maxBlocksPerMultiProcessor);
 
     double dx = L / N;
 
@@ -21,8 +26,6 @@ int main() {
         mesh.h(idx, 2) = 1e-2;
         mesh.v(idx   ) = dx * 1e-4; 
     }
-
-    cudaProfilerStart();
 
     mesh.sync_h2d();
 
@@ -39,7 +42,8 @@ int main() {
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);
-    poisson_pbicgstab(a, t, b, r, 1e-9, 100000, dom, ls_state);
+    // poisson_pbicgstab(a, t, b, r, 1e-9, 100000, dom, ls_state);
+    poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10000, 10, dom, ls_state);
     cudaEventRecord(stop);
 
     a.sync_d2h();
@@ -64,8 +68,6 @@ int main() {
     a.release(LOCATION::BOTH);
     t.release(LOCATION::BOTH);
     b.release(LOCATION::BOTH);
-
-    cudaProfilerStop();
 
     return 0;
 }
