@@ -42,10 +42,10 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
     for (int i = 0; i < restart + 1; i ++) {
         printf("%d %d %d %d %d %d %d %d\n", v[i]._hh._arr == nullptr, v[i]._loc, v[i]._hd._loc, v[i]._hh._loc, z[i]._hh._arr == nullptr, z[i]._loc, z[i]._hd._loc, z[i]._hh._loc);
     }
-    std::vector<std::vector<double>> h(restart + 1, std::vector<double>(restart + 1, 0));
+    Matrix<double> H(restart + 1, restart + 1, LOCATION::HOST, 31);
     std::vector<double> s(restart + 1, 0);
     std::vector<double> c(restart + 1, 0);
-    Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 33);
+    Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 32);
     std::vector<double> rm(restart + 1, 0);
 
     calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));

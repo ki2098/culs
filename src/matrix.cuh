@@ -120,11 +120,12 @@ MatrixCp<T>::~MatrixCp() {
     if (_loc == LOCATION::HOST) {
         // printf("destructor of MatrixCp %d called to free on HOST\n", _lab);
         free(_arr);
+        _loc &= (~LOCATION::HOST);
     } else if (_loc == LOCATION::DEVICE) {
         // printf("destructor of MatrixCp %d called to free on DEVICE\n", _lab);
         cudaFree(_arr);
+        _loc &= (~LOCATION::DEVICE);
     }
-    _loc = LOCATION::NONE;
 }
 
 template<class T>
