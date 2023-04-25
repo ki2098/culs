@@ -21,12 +21,12 @@ int main() {
     SMALS::solve(a, x, b);
     for (int i = 0; i < a._row; i ++) {
         for (int j = 0; j < a._col; j ++) {
-            printf("%8.4lf ", a(i, j));
+            printf("%10.6lf ", a(i, j));
         }
         printf(" , ");
-        printf("%8.4lf ", x(i));
+        printf("%10.6lf ", x(i));
         printf(" , ");
-        printf("%8.4lf ", b(i));
+        printf("%10.6lf ", b(i));
         printf("\n");
     }
     printf("\n");
