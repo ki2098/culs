@@ -39,17 +39,90 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
         v[i].init(dom._size, 1, LOCATION::DEVICE, 40 + i);
         z[i].init(dom._size, 1, LOCATION::DEVICE, 60 + i);
     }
-    for (int i = 0; i < restart + 1; i ++) {
+    /* for (int i = 0; i < restart + 1; i ++) {
         printf("%d %d %d %d %d %d %d %d\n", v[i]._hh._arr == nullptr, v[i]._loc, v[i]._hd._loc, v[i]._hh._loc, z[i]._hh._arr == nullptr, z[i]._loc, z[i]._hd._loc, z[i]._hh._loc);
-    }
+    } */
     Matrix<double> H(restart + 1, restart + 1, LOCATION::HOST, 31);
-    std::vector<double> s(restart + 1, 0);
-    std::vector<double> c(restart + 1, 0);
-    Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 32);
-    std::vector<double> rm(restart + 1, 0);
+    Matrix<double> s(restart + 1, 1, LOCATION::HOST, 32);
+    Matrix<double> c(restart + 1, 1, LOCATION::HOST, 33);
+    Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 34);
+    Matrix<double> rm(restart + 1, 1, LOCATION::HOST, 35);
 
     calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
-    state.re = MatrixUtil::calc_norm(r, dom);
+    double beta = MatrixUtil::calc_norm(r, dom);
+    state.re = beta / x._num;
+
+    for (state.it = 0; state.it < maxit; state.it ++) {
+        printf("\r%12.5e %d", state.re, state.it);  
+        if (state.re < e1) {
+            break;
+        }
+        MatrixUtil::clear(rm, LOCATION::HOST);
+        rm(0) = beta;
+        fgmres_kernel_1<<<n_blocks, n_threads>>>(*(v[0]._dd), *(r._dd), beta, *(dom._size_ptr));
+        for (int i = 0; i < restart; i ++) {
+            MatrixUtil::clear(z[i], LOCATION::DEVICE);
+            preconditioner_sor(a, z[i], v[i], 5, dom);
+            calc_ax_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(z[i]._dd), *(w._dd), *(dom._size_ptr));
+            for (int k = 0; k <= i; k ++) {
+                H(k, i) = dot(w, v[k], dom);
+                fgmres_kernel_2<<<n_blocks, n_threads>>>(*(w._dd), *(v[k]._dd), H(k, i), *(dom._size_ptr));
+            }
+            H(i + 1, i) = MatrixUtil::calc_norm(w, dom);
+
+            if (H(i + 1, i) < e1) {
+                n = i - 1;
+                jump1 = true;
+                break;
+            }
+
+            fgmres_kernel_1<<<n_blocks, n_threads>>>(*(v[i + 1]._dd), *(w._dd), H(i + 1, i), *(dom._size_ptr));
+
+            for (int k = 1; k <= i; k ++) {
+                double ht = H(k - 1, i);
+                H(k - 1, i) = c(k - 1) * ht + s(k - 1) * H(k, i);
+                H(k    , i) = s(k - 1) * ht + c(k - 1) * H(k, i);
+            }
+
+            double d = sqrt(H(i, i) * H(i, i) + H(i + 1, i) * H(i + 1, i));
+            if (d < e1) {
+                n = i - 1;
+                jump1 = true;
+                break;
+            }
+            c(i) = H(i    , i) / d;
+            s(i) = H(i + 1, i) / d;
+            H(i, i) = c(i) * H(i, i) + s(i) * H(i + 1, i);
+            rm(i + 1) = - s(i) * rm(i);
+            rm(i    ) =   c(i) * rm(i);
+            double rho = fabs(rm(i + 1));
+            if (rho < e2) {
+                n = i;
+                jump1 = true;
+                break;
+            }
+        }
+        if(!jump1) {
+            n = restart - 1;
+        }
+
+        for (int i = n; i >= 1; i --) {
+            rm(i) = rm(i) / H(i, i);
+            for (int k = 0; k < i; k ++) {
+                rm(k) -= rm(i) * H(k, i);
+            }
+        }
+        rm(0) = rm(0) / H(0, 0);
+
+        for (int i = 0; i <= n; i ++) {
+            fgmres_kernel_3<<<n_blocks, n_threads>>>(*(x._dd), *(z[i]._dd), rm(i), *(dom._size_ptr));
+        }
+
+        calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
+        beta = MatrixUtil::calc_norm(r, dom);
+        state.re = beta / x._num;
+    }
+    printf("\n\n");
 
     // for (state.it = 0; state.it < maxit; state.it ++) {
     //     // printf("\r%12.5e %d", state.re, state.it);  

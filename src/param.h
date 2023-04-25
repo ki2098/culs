@@ -7,7 +7,7 @@ const double TR        = 1e2;
 const double sor_omega = 1.2;
 
 const double L         = 1;
-const int    N         = 10;
+const int    N         = 1000;
 
 const int    n_blocks  = 8;
 const int    n_threads = 64;

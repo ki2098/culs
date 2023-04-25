@@ -63,9 +63,7 @@ MatrixCp<T>::MatrixCp(int row, int col, int loc, int lab) : _row(row), _col(col)
 
 template<class T>
 void MatrixCp<T>::init(dim3 &size, int col, int loc, int lab) {
-    if (_loc) {
-        return;
-    }
+    assert(_loc == LOCATION::NONE);
     _row = size.x * size.y * size.z;
     _col = col;
     _num = _row * _col;
@@ -84,9 +82,7 @@ void MatrixCp<T>::init(dim3 &size, int col, int loc, int lab) {
 
 template<class T>
 void MatrixCp<T>::init(int row, int col, int loc, int lab) {
-    if (_loc) {
-        return;
-    }
+    assert(_loc == LOCATION::NONE);
     _row = row;
     _col = col;
     _num = _row * _col;
@@ -172,9 +168,7 @@ Matrix<T>::Matrix(int row, int col, int loc, int lab) : _row(row), _col(col), _n
 
 template<class T>
 void Matrix<T>::init(dim3 &size, int col, int loc, int lab) {
-    if (_loc) {
-        return;
-    }
+    assert(_loc == LOCATION::NONE);
     _row = size.x * size.y * size.z;
     _col = col;
     _num = _row * _col;
@@ -191,9 +185,7 @@ void Matrix<T>::init(dim3 &size, int col, int loc, int lab) {
 
 template<class T>
 void Matrix<T>::init(int row, int col, int loc, int lab) {
-    if (_loc) {
-        return;
-    }
+    assert(_loc == LOCATION::NONE);
     _row = row;
     _col = col;
     _num = _row * _col;
