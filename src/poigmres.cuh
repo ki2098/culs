@@ -123,160 +123,95 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
         state.re = beta / x._num;
     }
     printf("\n\n");
-
-    // for (state.it = 0; state.it < maxit; state.it ++) {
-    //     // printf("\r%12.5e %d", state.re, state.it);  
-    //     if (state.re < e1) {
-    //         return;
-    //     }
-        
-    //     printf("%d_______________________________________________________________________________________________\n", state.it);
-
-        
-    //     rm[0] = state.re;
-    //     fgmres_kernel_1<<<n_blocks, n_threads>>>(*(v[0]._dd), *(r._dd), state.re, *(dom._size_ptr));
-        
-    //     v[0].sync_d2h();
-    //     printf("rm= ");
-    //     for(int _ = 0; _ < N; _ ++) {
-    //         printf("%lf ", rm[_]);
-    //     }
-    //     printf("\n");
-    //     printf("v0= ");
-    //     for(int _ = 0; _ < N; _ ++) {
-    //         printf("%lf ", v[0](_));
-    //     }
-    //     printf("\n");
-
-    //     jump1 = false;
-
-    //     for (int i = 0; i < restart; i ++) {
-    //         printf("%d.%d_____________________________________________________________________________________________\n", state.it, i);
-    //         printf("v= ");
-    //         v[i].sync_d2h();
-    //         for(int _ = 0; _ < N; _ ++) {
-    //             printf("%lf ", v[i](_));
-    //         }
-    //         printf("\n");
-
-    //         MatrixUtil::clear(z[i], LOCATION::DEVICE);
-    //         printf("v= ");
-    //         v[i].sync_d2h();
-    //         for(int _ = 0; _ < N; _ ++) {
-    //             printf("%lf ", v[i](_));
-    //         }
-    //         printf("\n");
-    //         for (int _ = 1; _ <= 5; _ ++) {
-    //             poisson_sor_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(z[i]._dd), *(v[i]._dd), sor_omega, 0, *(dom._size_ptr));
-    //             poisson_sor_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(z[i]._dd), *(v[i]._dd), sor_omega, 1, *(dom._size_ptr));
-    //         }
-
-    //         /* printf("v= ");
-    //         v[i].sync_d2h();
-    //         for(int _ = 0; _ < N; _ ++) {
-    //             printf("%lf ", v[i](_));
-    //         }
-    //         printf("\n"); */
-
-    //         calc_ax_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(z[i]._dd), *(w._dd), *(dom._size_ptr));
-
-            
-    //         printf("z= ");
-    //         z[i].sync_d2h();
-    //         for(int _ = 0; _ < N; _ ++) {
-    //             printf("%lf ", z[i](_));
-    //         }
-    //         printf("\n");
-    //         printf("w= ");
-    //         w.sync_d2h();
-    //         for(int _ = 0; _ < N; _ ++) {
-    //             printf("%lf ", w(_));
-    //         }
-    //         printf("\n");
-
-    //         for (int k = 0; k <= i; k ++) {
-    //             h[k][i] = dot(w, v[k], dom);
-    //             fgmres_kernel_2<<<n_blocks, n_threads>>>(*(w._dd), *(v[k]._dd), h[k][i], *(dom._size_ptr));
-
-    //             printf("dot= %lf\n",h[k][i]);
-    //             printf("w= ");
-    //             w.sync_d2h();
-    //             for(int _ = 0; _ < N; _ ++) {
-    //                 printf("%lf ", w(_));
-    //             }
-    //             printf("\n");
-    //         }
-    //         h[i + 1][i] = MatrixUtil::calc_norm(w, dom);
-
-    //         if (h[i + 1][i] < e1) {
-    //             /* pseudo converge */
-    //             n = i - 1;
-    //             jump1 = true;
-    //             break;
-    //         }
-
-    //         fgmres_kernel_1<<<n_blocks, n_threads>>>(*(v[i + 1]._dd), *(w._dd), h[i + 1][i], *(dom._size_ptr));
-
-    //         for (int k = 1; k <= i; k ++) {
-    //             double ht = h[k - 1][i];
-    //             h[k - 1][i] = c[k - 1] * ht + s[k - 1] * h[k][i];
-    //             h[k    ][i] = s[k - 1] * ht + c[k - 1] * h[k][i];
-    //         }
-
-    //         double d = sqrt(h[i][i] * h[i][i] + h[i + 1][i] * h[i + 1][i]);
-    //         if (d < e1) {
-    //             n = i - 1;
-    //             jump1 = true;
-    //             break;
-    //         }
-    //         c[i] = h[i    ][i] / d;
-    //         s[i] = h[i + 1][i] / d;
-    //         h[i][i] = c[i] * h[i][i] + s[i] * h[i + 1][i];
-
-    //         rm[i + 1] = - s[i] * rm[i];
-    //         rm[i    ] =   c[i] * rm[i];
-
-    //         if (fabs(rm[i + 1]) < e2) {
-    //             n = i;
-    //             jump1 = true;
-    //         }
-    //     }
-
-    //     if (!jump1) {
-    //         n = restart - 1;
-    //     }
-
-    //     for (int i = n; i >= 1; i --) {
-    //         rm[i] = rm[i] / h[i][i];
-    //         for (int k = 0; k < i; k ++) {
-    //             rm[k] -= rm[i] * h[k][i];
-    //         }
-    //     }
-    //     rm[0] = rm[0] / h[0][0];
-
-    //     for (int i = 0; i <= n; i ++) {
-    //         fgmres_kernel_3<<<n_blocks, n_threads>>>(*(x._dd), *(z[i]._dd), rm[i], *(dom._size_ptr));
-    //     }
-
-    //     calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
-    //     state.re = MatrixUtil::calc_norm(r, dom);
-
-    //     // for (int i = 0; i < restart + 1; i ++) {
-    //     //     printf("%lf ", rm[i]);
-    //     // }
-    //     // printf("\n");
-    // }
-    // printf("\n\n");
-
-    // for (int i = 0; i < restart + 1; i ++) {
-    //     printf("%lf %lf %lf\n", s[i], c[i], rm[i]);
-    // }
-    // for (int i = 0; i < restart + 1; i ++) {
-    //     for (int j = 0; j < restart + 1; j ++) {
-    //         printf("%lf ", h[i][j]);
-    //     }
-    //     printf("\n");
-    // }
 }
+
+/* double sign(double x) {
+    if (x == 0) {
+        return 1;
+    }
+    return x / fabs(x);
+}
+
+__global__ static void householder_kernel_1(MatrixCp<double> &w, double norm, dim3 &size) {
+    int stride = Util::get_global_size();
+    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+        w(idx) /= norm;
+    }
+}
+
+__global__ static void householder_kernel_2(MatrixCp<double> &v, MatrixCp<double> &w, int inner, dim3 &size) {
+    int stride = Util::get_global_size();
+    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+        v(idx) = - 2 * w(inner) * w(idx);
+        if (idx == inner) {
+            v(idx) += 1;
+        }
+    }
+}
+
+__global__ static void apply_householder_kernel(MatrixCp<double> &v, MatrixCp<double> &w, double vwp, dim3 &size) {
+    int stride = Util::get_global_size();
+    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+        v(idx) -= 2 * vwp * w(idx);
+    }
+}
+
+static void gmres_householder(Matrix<double> &a, Matrix<double> &x, Matrix<double> &b, Matrix<double> &r, double e, int maxit, int restart, Dom &dom, LS_State &state) {
+    Matrix<double> H(restart, restart, LOCATION::HOST, 31);
+    Matrix<double> s(restart, 1, LOCATION::HOST, 32);
+    Matrix<double> c(restart, 1, LOCATION::HOST, 33);
+    Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 34);
+    Matrix<double> v(dom._size, 1, LOCATION::DEVICE, 35);
+    Matrix<double> vt(dom._size, 1, LOCATION::DEVICE, 36);
+    std::vector<Matrix<double>> M(restart + 1);
+    for (int i = 0; i < restart + 1; i ++) {
+        M[i].init(dom._size, 1, LOCATION::DEVICE, 40 + i);
+    }
+    Matrix<double> g(dom._size, 1, LOCATION::HOST, 37);
+
+    calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
+    double normr = MatrixUtil::calc_norm(r, dom);
+    state.re = normr / x._num;
+
+    for (state.it = 0; state.it < maxit; state.it ++) {
+        printf("\r%12.5e %d", state.re, state.it);  
+        if (state.re < e) {
+            break;
+        }
+
+        MatrixUtil::assign(w, r, LOCATION::DEVICE);
+        double w0, beta;
+        cudaMemcpy(&w0, w._hd._arr, sizeof(double), cudaMemcpyDeviceToHost);
+        beta = sign(w0) * normr;
+        w0 += beta;
+        cudaMemcpy(w._hd._arr, &w0, sizeof(double), cudaMemcpyHostToDevice);
+        double normw = MatrixUtil::calc_norm(w, dom);
+        householder_kernel_1<<<n_blocks, n_threads>>>(*(w._dd), normw, *(dom._size_ptr));
+        MatrixUtil::assign(M[0], w, LOCATION::DEVICE);
+        g(0) = - beta;
+
+        for (int i = 0; i < restart; i ++) {
+            householder_kernel_2<<<n_blocks, n_threads>>>(*(v._dd), *(w._dd), i, *(dom._size_ptr));
+            for (int k = i - 1; k >= 0; k --) {
+                double vwp = dot(v, M[k], dom);
+                apply_householder_kernel<<<n_blocks, n_threads>>>(*(v._dd), *(M[k]._dd), vwp, *(dom._size_ptr));
+            }
+
+            calc_ax_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(v._dd), *(vt._dd), *(dom._size_ptr));
+
+            MatrixUtil::clear(v, LOCATION::DEVICE);
+            preconditioner_sor(a, v, vt, 5, dom);
+
+            for (int k = 0; k <= i; k ++) {
+                double vwp = dot(v, M[k], dom);
+                apply_householder_kernel<<<n_blocks, n_threads>>>(*(v._dd), *(M[k]._dd), vwp, *(dom._size_ptr));
+            }
+
+            if (i < a._row - 1) {
+                
+            }
+        }
+    }
+} */
 
 #endif

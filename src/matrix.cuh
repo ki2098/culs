@@ -251,6 +251,53 @@ void Matrix<T>::sync_d2h() {
     }
 }
 
+/* template<class T>
+struct SliceCp {
+    int _anchor_row;
+    int _anchor_col;
+    int _row;
+    int _col;
+    int _num;
+    int _loc;
+    MatrixCp<T> *_original;
+    __host__ __device__ T& operator()(int row_idx, int col_idx) {return _original->operator()(row_idx + _anchor_row, col_idx + _anchor_col);}
+    __host__ __device__ T& operator()(int idx) {
+        assert(_col == 1);
+        return _original->operator()(idx + _anchor_row, _anchor_col);
+    }
+    SliceCp(MatrixCp<T> &original, int row_start, int row_end, int col_start, int col_end) : _original(&original), _anchor_row(row_start), _anchor_col(col_start), _row(row_end - row_start), _col(col_end - col_start), _loc(original._loc) {
+        _num = _row * _col;
+    }
+};
+
+template<class T>
+struct Slice {
+    SliceCp<T>  _hh;
+    SliceCp<T>  _hd;
+    SliceCp<T> *_dd;
+    int _anchor_row;
+    int _anchor_col;
+    int _row;
+    int _col;
+    int _num;
+    int _loc;
+    Matrix<T> *_original;
+    __host__ __device__ T& operator()(int row_idx, int col_idx) {return _original->operator()(row_idx + _anchor_row, col_idx + _anchor_col);}
+    __host__ __device__ T& operator()(int idx) {
+        assert(_col == 1);
+        return _original->operator()(idx + _anchor_row, _anchor_col);
+    }
+    Slice(Matrix<T> &original, int row_start, int row_end, int col_start, int col_end) :_hh(original._hh, row_start, row_end, col_start, col_end), _hd(original._hd, row_start, row_end, col_start, col_end), _original(&original), _anchor_row(row_start), _anchor_col(col_start), _row(row_end - row_start), _col(col_end - col_start), _loc(original._loc) {
+        _num = _row * _col;
+        if (original._loc & LOCATION::DEVICE) {
+            cudaMalloc(&_dd, sizeof(SliceCp<T>));
+            SliceCp<T> temp(original._hd);
+            temp._original = original._dd;
+            cudaMemcpy(_dd, &temp, sizeof(SliceCp<T>), cudaMemcpyHostToDevice);
+        }
+    }
+}; */
+
 namespace MatrixUtil {
 
 __global__ static void get_max_diag_kernel(MatrixCp<double> &a, double *max_partial, dim3 &size) {
