@@ -72,11 +72,15 @@ static void poisson_pbicgstab(Matrix<double> &a, Matrix<double> &x, Matrix<doubl
     state.re = MatrixUtil::calc_norm(r, dom) / x._num;
     MatrixUtil::assign(rr, r, LOCATION::DEVICE);
 
+    FILE *resfile = fopen("./pbicgstab_res.csv", "w");
+    fprintf(resfile, "it,res\n");
+
     rrho  = 1;
     alpha = 0;
     omega = 1;
 
     for (state.it = 0; state.it < maxit; state.it ++) {
+        fprintf(resfile, "%d,%.5e\n", state.it, state.re);
         printf("\r%12.5e %d", state.re, state.it);  
         if (state.re < e) {
             break;
@@ -112,7 +116,7 @@ static void poisson_pbicgstab(Matrix<double> &a, Matrix<double> &x, Matrix<doubl
         state.re = MatrixUtil::calc_norm(r, dom) / x._num; 
     }
     printf("\n\n");
-
+    fclose(resfile);
     // rr.release(LOCATION::DEVICE);
     // p.release(LOCATION::DEVICE);
     // q.release(LOCATION::DEVICE);

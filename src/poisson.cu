@@ -42,8 +42,8 @@ int main() {
     cudaEventCreate(&stop);
 
     cudaEventRecord(start);
-    poisson_sor(a, t, b, r, 1e-9, 10000, dom, ls_state);
-    // poisson_pbicgstab(a, t, b, r, 1e-9, 10000, dom, ls_state);
+    // poisson_sor(a, t, b, r, 1e-9, 10000, dom, ls_state);
+    poisson_pbicgstab(a, t, b, r, 1e-9, 10000, dom, ls_state);
     // poisson_fgmres(a, t, b, r, 1e-9, 1e-9, 10000, 10, dom, ls_state);
     cudaEventRecord(stop);
 

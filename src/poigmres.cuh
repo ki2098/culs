@@ -4,6 +4,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <vector>
+#include <cstdio>
+#include <cstdlib>
 #include "matrix.cuh"
 #include "util.cuh"
 #include "mesh.cuh"
@@ -48,11 +50,15 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
     Matrix<double> w(dom._size, 1, LOCATION::DEVICE, 34);
     Matrix<double> rm(restart + 1, 1, LOCATION::HOST, 35);
 
+    FILE *resfile = fopen("./gmres_res.csv", "w");
+    fprintf(resfile, "it,res\n");
+
     calc_res_kernel<<<n_blocks, n_threads>>>(*(a._dd), *(x._dd), *(b._dd), *(r._dd), *(dom._size_ptr));
     double beta = MatrixUtil::calc_norm(r, dom);
     state.re = beta / x._num;
 
     for (state.it = 0; state.it < maxit; state.it ++) {
+        fprintf(resfile, "%d,%.5e\n", state.it, state.re);
         printf("\r%12.5e %d", state.re, state.it);  
         if (state.re < e1) {
             break;
@@ -123,6 +129,7 @@ static void poisson_fgmres(Matrix<double> &a, Matrix<double> &x, Matrix<double> 
         state.re = beta / x._num;
     }
     printf("\n\n");
+    fclose(resfile);
 }
 
 /* double sign(double x) {
