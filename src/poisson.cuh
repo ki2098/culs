@@ -28,29 +28,45 @@ static void poisson_sor(Matrix<double> &a, Matrix<double> &x, Matrix<double> &b,
 
 
 __global__ static void pbicgstab_kernel_1(MatrixCp<double> &p, MatrixCp<double> &q, MatrixCp<double> &r, double beta, double omega, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     p(idx) = r(idx) + beta * (p(idx) - omega * q(idx));
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         p(idx) = r(idx) + beta * (p(idx) - omega * q(idx));
     }
 }
 
 __global__ static void pbicgstab_kernel_2(MatrixCp<double> &s, MatrixCp<double> &q, MatrixCp<double> &r, double alpha, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     s(idx) = r(idx) - alpha * q(idx);
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         s(idx) = r(idx) - alpha * q(idx);
     }
 }
 
 __global__ static void pbicgstab_kernel_3(MatrixCp<double> &x, MatrixCp<double> &pp, MatrixCp<double> &ss, double alpha, double omega, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     x(idx) += (alpha * pp(idx) + omega * ss(idx));
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         x(idx) += (alpha * pp(idx) + omega * ss(idx));
     }
 }
 
 __global__ static void pbicgstab_kernel_4(MatrixCp<double> &r, MatrixCp<double> &s, MatrixCp<double> &t, double omega, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     r(idx) = s(idx) - omega * t(idx);
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         r(idx) = s(idx) - omega * t(idx);
     }
 }

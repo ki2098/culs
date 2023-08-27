@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_profiler_api.h>
+#include <iostream>
 #include "poisson.cuh"
 #include "poigmres.cuh"
 
@@ -34,6 +35,8 @@ int main() {
     Matrix<double> b(size, 1, LOCATION::BOTH, 13);
     Matrix<double> r(size, 1, LOCATION::BOTH, 14);
 
+    printf("run in %u x %u threads\n", n_blocks, n_threads);
+
     prepare_poisson_eq(a, b, mesh, dom);
 
     LS_State ls_state;
@@ -52,15 +55,15 @@ int main() {
     b.sync_d2h();
     r.sync_d2h();
 
-    for (int idx = 0; idx < N; idx ++) {
-        printf("%12.5e %12.5e %12.5e, %12.5e\n", a(idx, 1), a(idx, 0), a(idx, 2), b(idx));
-    }
-    printf("---------------------------------------\n");
-    for (int idx = 0; idx < N; idx ++) {
-        printf("%12.5e\n", t(idx));
-    }
-    printf("---------------------------------------\n");
-    printf("%12.5e, %d\n", ls_state.re, ls_state.it);
+    // for (int idx = 0; idx < N; idx ++) {
+    //     printf("%12.5e %12.5e %12.5e, %12.5e\n", a(idx, 1), a(idx, 0), a(idx, 2), b(idx));
+    // }
+    // printf("---------------------------------------\n");
+    // for (int idx = 0; idx < N; idx ++) {
+    //     printf("%12.5e\n", t(idx));
+    // }
+    // printf("---------------------------------------\n");
+    // printf("%12.5e, %d\n", ls_state.re, ls_state.it);
 
     float wall_time;
     cudaEventElapsedTime(&wall_time, start, stop);

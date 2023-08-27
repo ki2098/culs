@@ -15,12 +15,18 @@ struct LS_State {
 
 __global__ static void dot_kernel(MatrixCp<double> &a, MatrixCp<double> &b, double *sum_partial, dim3 &size) {
     __shared__ double cache[n_threads];
-    int stride = Util::get_global_size();
-    double temp_sum = 0;
-    for (int idx = Util::get_global_idx(); idx < a._num; idx += stride) {
-        temp_sum += a(idx) * b(idx);
+    // int stride = Util::get_global_size();
+    // double temp_sum = 0;
+    // for (int idx = Util::get_global_idx(); idx < a._num; idx += stride) {
+    //     temp_sum += a(idx) * b(idx);
+    // }
+    // cache[threadIdx.x] = temp_sum;
+    int idx = Util::get_global_idx();
+    double temp = 0;
+    if (idx < size.x) {
+        temp = a(idx) * b(idx);
     }
-    cache[threadIdx.x] = temp_sum;
+    cache[threadIdx.x] = temp;
     __syncthreads();
 
     int length = n_threads;
@@ -60,8 +66,8 @@ static double dot(Matrix<double> &a, Matrix<double> &b, Dom &dom) {
 }
 
 __global__ static void prepare_poisson_eq_kernel(MatrixCp<double> &a, MatrixCp<double> &b, MatrixCp<double> &x, MatrixCp<double> &h, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         if (idx == 0) {
             double dxr = x(idx + 1, 0) - x(idx, 0);
             double dx  = h(idx, 0);
@@ -101,8 +107,8 @@ __global__ static void prepare_poisson_eq_kernel(MatrixCp<double> &a, MatrixCp<d
 }
 
 __global__ static void scale_eq_kernel(MatrixCp<double> &a, MatrixCp<double> &b, dim3 &size, double max_diag) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         a(idx, 0) /= max_diag;
         a(idx ,1) /= max_diag;
         a(idx, 2) /= max_diag;
@@ -120,8 +126,8 @@ static void prepare_poisson_eq(Matrix<double> &a, Matrix<double> &b, Mesh &mesh,
 }
 
 __global__ static void calc_res_kernel(MatrixCp<double> &a, MatrixCp<double> &x, MatrixCp<double> &b, MatrixCp<double> &r, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         double ac = a(idx, 0);
         double al = a(idx, 1);
         double ar = a(idx, 2);
@@ -136,8 +142,8 @@ __global__ static void calc_res_kernel(MatrixCp<double> &a, MatrixCp<double> &x,
 }
 
 __global__ static void poisson_sor_kernel(MatrixCp<double> &a, MatrixCp<double> &x, MatrixCp<double> &b, double omega, int color, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         double ac = a(idx, 0);
         double al = a(idx, 1);
         double ar = a(idx, 2);
@@ -156,8 +162,8 @@ __global__ static void poisson_sor_kernel(MatrixCp<double> &a, MatrixCp<double> 
 }
 
 __global__ static void poisson_jacobi_kernel(MatrixCp<double> &a, MatrixCp<double> &xn, MatrixCp<double> &xp, MatrixCp<double> &b, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         double ac = a(idx, 0);
         double al = a(idx, 1);
         double ar = a(idx, 2);
@@ -189,8 +195,8 @@ static void preconditioner_jacobi(Matrix<double> &a, Matrix<double> &x, Matrix<d
 }
 
 __global__ static void calc_ax_kernel(MatrixCp<double> &a, MatrixCp<double> &x, MatrixCp<double> &ax, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         double ac = a(idx, 0);
         double al = a(idx, 1);
         double ar = a(idx, 2);

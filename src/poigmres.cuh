@@ -12,22 +12,34 @@
 #include "poiutil.cuh"
 
 __global__ static void fgmres_kernel_1(MatrixCp<double> &v, MatrixCp<double> &r, double beta, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     v(idx) = r(idx) / beta;
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         v(idx) = r(idx) / beta;
     }
 }
 
 __global__ static void fgmres_kernel_2(MatrixCp<double> &w, MatrixCp<double> &v, double h, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     w(idx) -= h * v(idx);
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         w(idx) -= h * v(idx);
     }
 }
 
 __global__ static void fgmres_kernel_3(MatrixCp<double> &x, MatrixCp<double> &z, double rm, dim3 &size) {
-    int stride = Util::get_global_size();
-    for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    // int stride = Util::get_global_size();
+    // for (int idx = Util::get_global_idx(); idx < size.x; idx += stride) {
+    //     x(idx) += rm * z(idx);
+    // }
+    int idx = Util::get_global_idx();
+    if (idx < size.x) {
         x(idx) += rm * z(idx);
     }
 }

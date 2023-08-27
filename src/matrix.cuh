@@ -302,15 +302,21 @@ namespace MatrixUtil {
 
 __global__ static void get_max_diag_kernel(MatrixCp<double> &a, double *max_partial, dim3 &size) {
     __shared__ double cache[n_threads];
-    int stride = Util::get_global_size();
-    double temp_max = 0;
-    for (int idx = Util::get_global_idx(); idx < a._row; idx += stride) {
-        double _value = fabs(a(idx, 0));
-        if (_value > temp_max) {
-            temp_max = _value;
-        }
+    // int stride = Util::get_global_size();
+    // double temp_max = 0;
+    // for (int idx = Util::get_global_idx(); idx < a._row; idx += stride) {
+    //     double _value = fabs(a(idx, 0));
+    //     if (_value > temp_max) {
+    //         temp_max = _value;
+    //     }
+    // }
+    // cache[threadIdx.x] = temp_max;
+    int idx = Util::get_global_idx();
+    double temp = 0;
+    if (idx < size.x) {
+        temp = fabs(a(idx, 0));
     }
-    cache[threadIdx.x] = temp_max;
+    cache[threadIdx.x] = temp;
 
     int length = n_threads;
     while (length > 1) {
@@ -355,12 +361,18 @@ static double get_max_diag(Matrix<double> &a, Dom &dom) {
 
 __global__ static void calc_norm_kernel(MatrixCp<double> &a, double *sum_partial, dim3 &size) {
     __shared__ double cache[n_threads];
-    int stride = Util::get_global_size();
-    double temp_sum = 0;
-    for (int idx = Util::get_global_idx(); idx < a._num; idx += stride) {
-        temp_sum += a(idx) * a(idx);
+    // int stride = Util::get_global_size();
+    // double temp_sum = 0;
+    // for (int idx = Util::get_global_idx(); idx < a._num; idx += stride) {
+    //     temp_sum += a(idx) * a(idx);
+    // }
+    // cache[threadIdx.x] = temp_sum;
+    int idx = Util::get_global_idx();
+    double temp = 0;
+    if (idx < size.x) {
+        temp = a(idx) * a(idx);
     }
-    cache[threadIdx.x] = temp_sum;
+    cache[threadIdx.x] = temp;
     __syncthreads();
 
     int length = n_threads;

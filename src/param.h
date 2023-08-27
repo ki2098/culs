@@ -9,9 +9,9 @@ const double sor_omega = 1.2;
 const double L         = 1;
 const int    N         = 1000;
 
-const int    n_blocks  = 8;
-const int    n_threads = 64;
-
 const int    restart = 10;
+
+const unsigned int n_threads = 128;
+const unsigned int n_blocks  = (N + n_threads - 1) / n_threads;
 
 #endif
